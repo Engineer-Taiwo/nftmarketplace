@@ -1,158 +1,802 @@
-# NFT Marketplace 
+# NFT Marketplace
 
-The final project for the Cyfrin Web3 Full Stack crash course, where we introduce:
+A full-stack decentralized NFT marketplace built from scratch with **Next.js, TypeScript, Solidity, Foundry, Wagmi, RainbowKit, rindexer, PostgreSQL, GraphQL, and Ethereum Sepolia**.
 
-1. Indexing (rindexer)
-2. Fleek CLI
-4. Compliance Engine
-5. USDC payment
-6. Gashawk
+The application enables users to:
 
-A full-stack NFT marketplace with listing, buying, and compliance features built with Next.js, TypeScript, and Wagmi.
+* Mint NFTs
+* List NFTs for sale
+* Purchase listed NFTs
+* Browse recently listed NFTs
+* Make payments using USDC
+* Connect Web3 wallets
+* Query indexed blockchain data through GraphQL
+* Perform address compliance checks
+* Interact with smart contracts deployed on Ethereum Sepolia
 
-# STARTING CODEBASE!
+The project combines an on-chain smart-contract layer with an off-chain indexing and API layer to provide a complete Web3 application architecture.
 
-We will need to implement:
-- Update the home page
-  - Add all recently listed NFTs
-  - Indexer
-- Compliance Engine
+## Architecture
 
-If you wish to see what the final product looks like, head over to the `main` branch!
+The application is composed of three major layers:
 
+```text
+                         Ethereum Sepolia
+                               │
+                               │
+                     ┌─────────▼─────────┐
+                     │  Solidity Smart   │
+                     │    Contracts      │
+                     │                   │
+                     │ • NFT Marketplace │
+                     │ • CakeNFT         │
+                     │ • MoodNFT         │
+                     │ • USDC            │
+                     └─────────┬─────────┘
+                               │
+                         Contract Events
+                               │
+                               ▼
+                     ┌───────────────────┐
+                     │     rindexer      │
+                     │                   │
+                     │ Blockchain Indexer│
+                     └─────────┬─────────┘
+                               │
+                               ▼
+                     ┌───────────────────┐
+                     │    PostgreSQL     │
+                     │     Database      │
+                     └─────────┬─────────┘
+                               │
+                               ▼
+                     ┌───────────────────┐
+                     │   GraphQL API     │
+                     │                   │
+                     │ localhost:3001    │
+                     └─────────┬─────────┘
+                               │
+                               ▼
+                     ┌───────────────────┐
+                     │    Next.js App    │
+                     │                   │
+                     │ TypeScript        │
+                     │ Wagmi             │
+                     │ RainbowKit        │
+                     └───────────────────┘
+                               │
+                               ▼
+                           MetaMask
+```
 
-# Table of Contents
+### On-chain layer
 
-- [NFT Marketplace](#nft-marketplace)
-- [STARTING CODEBASE!](#starting-codebase)
-- [Table of Contents](#table-of-contents)
-- [Getting Started](#getting-started)
-  - [Requirements](#requirements)
-    - [Environment Variables](#environment-variables)
-  - [Setup](#setup)
-    - [Add Anvil to your metamask](#add-anvil-to-your-metamask)
-    - [Add Anvil accounts to your Metamask](#add-anvil-accounts-to-your-metamask)
-    - [Docker .env](#docker-env)
-  - [Running the Application](#running-the-application)
-- [Database Reset](#database-reset)
-- [Features](#features)
-- [Addresses for testing](#addresses-for-testing)
+The smart contracts are deployed to **Ethereum Sepolia**, Ethereum's public testnet for application development. Sepolia uses chain ID `11155111`.
+
+The contracts handle the core trust-sensitive operations:
+
+* NFT minting
+* NFT ownership
+* NFT listing
+* NFT purchases
+* USDC payments
+* Marketplace state
+
+### Indexing layer
+
+Instead of querying the blockchain directly for every marketplace operation, the application uses **rindexer** to listen for blockchain events and persist relevant data in PostgreSQL.
+
+The indexed data is exposed through a GraphQL API which the Next.js frontend consumes.
+
+This provides a much more practical query layer for operations such as:
+
+* Recently listed NFTs
+* NFT listings
+* NFT ownership-related marketplace information
+* Historical marketplace events
+
+### Frontend layer
+
+The frontend is implemented with:
+
+* Next.js
+* TypeScript
+* Wagmi
+* RainbowKit
+* React
+* GraphQL
+
+Wagmi handles blockchain interactions while RainbowKit provides the wallet-connection interface.
+
+---
+
+# Features
+
+## NFT Minting
+
+Users can mint NFTs through the NFT smart contracts.
+
+## NFT Listing
+
+NFT owners can list their NFTs on the marketplace by interacting with the marketplace smart contract.
+
+## NFT Buying
+
+Users can purchase NFTs listed by other users.
+
+The purchase flow involves blockchain transactions and, where applicable, USDC payment.
+
+## Recently Listed NFTs
+
+The frontend retrieves indexed marketplace data through GraphQL and displays recently listed NFTs.
+
+Rather than repeatedly scanning the blockchain from the browser, the application queries the indexed PostgreSQL-backed GraphQL API.
+
+## USDC Payments
+
+The marketplace supports USDC-based payments for NFT purchases.
+
+The USDC contract used by the application is deployed on Ethereum Sepolia.
+
+## Address Compliance
+
+The application includes an optional compliance layer that can screen wallet addresses before allowing relevant operations.
+
+Compliance checking can be enabled through the environment configuration.
+
+## Wallet Integration
+
+Users can connect their wallets through RainbowKit and Wagmi.
+
+Supported wallet providers depend on the configured RainbowKit/WalletConnect setup.
+
+## Blockchain Indexing
+
+rindexer listens for relevant smart-contract events on Ethereum Sepolia and indexes them into PostgreSQL.
+
+The indexed information is then made available through GraphQL.
+
+---
+
+# Technology Stack
+
+| Layer                   | Technology            |
+| ----------------------- | --------------------- |
+| Frontend                | Next.js               |
+| Language                | TypeScript            |
+| Web3                    | Wagmi                 |
+| Wallet UI               | RainbowKit            |
+| Smart Contracts         | Solidity              |
+| Smart Contract Tooling  | Foundry               |
+| Blockchain              | Ethereum Sepolia      |
+| Blockchain Indexer      | rindexer              |
+| Database                | PostgreSQL            |
+| API                     | GraphQL               |
+| Database Infrastructure | Docker                |
+| Token                   | USDC                  |
+| Compliance              | Circle Compliance API |
+| Package Manager         | pnpm                  |
+
+---
 
 # Getting Started
 
 ## Requirements
 
-- [node](https://nodejs.org/en/download)
-    - You'll know you've installed it right if you can run `node --version` and get a response like `v18.0.0`
-- [pnpm](https://pnpm.io/)
-    - You'll know you've installed it right if you can run `pnpm --version` and get a response like `8.0.0`
-- [git](https://git-scm.com/downloads)
-    - You'll know you've installed it right if you can run `git --version` and get a response like `git version 2.33.0`
-- [foundry/anvil](https://book.getfoundry.sh/)
-    - You'll know you've installed it right if you can run `anvil --version` and get a response like `anvil Version: 1.0.0-stable`
-- [docker](https://www.docker.com/get-started/)
-    - You'll know you've installed it right if you can run `docker --version` and get a response like `Docker version 27.4.0, build bde2b89`
-- [rindexer](https://github.com/joshstevens19/rindexer)
-    - ou'll know you've installed it right if you can run `rindexer --version` and get a response like `rindexer 0.15.2`
+Install the following tools before running the project.
 
-### Environment Variables
+### Node.js
 
-Create a `.env.local` file with the following environment variables:
+Install Node.js from the official Node.js website.
 
-```
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
-GRAPHQL_API_URL=http://localhost:3001/graphql
-ENABLE_COMPLIANCE_CHECK=false
-CIRCLE_API_KEY=TEST_API_KEY
-```
-
-- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`: Get this from [WalletConnect Cloud](https://cloud.walletconnect.com/)
-- `GRAPHQL_API_URL`: Points to your local indexer GraphQL endpoint
-- `ENABLE_COMPLIANCE_CHECK`: To enable compliance checks, set this to `true`. If you set this to false, you don't need the `CIRCLE_API_KEY`
-- `CIRCLE_API_KEY`: Get this from [Circle Developer Portal](https://console.circle.com/api-keys)
-
-## Setup
+Verify the installation:
 
 ```bash
-git clone https://github.com/cyfrin/ts-nft-marketplace-cu
+node --version
+```
+
+### pnpm
+
+Install pnpm and verify:
+
+```bash
+pnpm --version
+```
+
+### Git
+
+Verify Git:
+
+```bash
+git --version
+```
+
+### Foundry
+
+Foundry is required for the smart-contract development and deployment workflow.
+
+Verify:
+
+```bash
+forge --version
+```
+
+### Docker
+
+Docker is required for the PostgreSQL database used by the indexer.
+
+Verify:
+
+```bash
+docker --version
+```
+
+### rindexer
+
+rindexer is responsible for indexing blockchain events and exposing the indexed data through GraphQL.
+
+Verify:
+
+```bash
+rindexer --version
+```
+
+The project was developed and tested with rindexer `0.41.0`.
+
+---
+
+# Environment Variables
+
+Create a `.env.local` file in the root of the Next.js application.
+
+```env
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
+
+GRAPHQL_API_URL=http://localhost:3001/graphql
+
+ENABLE_COMPLIANCE_CHECK=false
+
+CIRCLE_API_KEY=your_circle_api_key
+
+NEXT_PUBLIC_SEPOLIA_RPC_URL=your_sepolia_rpc_url
+```
+
+### `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
+
+The WalletConnect project ID used by RainbowKit.
+
+Create one through WalletConnect Cloud.
+
+### `GRAPHQL_API_URL`
+
+The URL of the GraphQL API exposed by the rindexer indexer.
+
+For local development:
+
+```env
+GRAPHQL_API_URL=http://localhost:3001/graphql
+```
+
+### `ENABLE_COMPLIANCE_CHECK`
+
+Controls whether address compliance checking is enabled.
+
+```env
+ENABLE_COMPLIANCE_CHECK=false
+```
+
+Set it to:
+
+```env
+ENABLE_COMPLIANCE_CHECK=true
+```
+
+to enable compliance checks.
+
+### `CIRCLE_API_KEY`
+
+API key used when compliance checking is enabled.
+
+Do not commit this value to Git.
+
+### `NEXT_PUBLIC_SEPOLIA_RPC_URL`
+
+The Ethereum Sepolia execution-layer RPC endpoint used by the application and/or deployment tooling.
+
+For example:
+
+```env
+NEXT_PUBLIC_SEPOLIA_RPC_URL=YOUR_SEPOLIA_RPC_ENDPOINT
+```
+
+Use your own provider endpoint from Chainstack, Alchemy, Infura, or another Ethereum RPC provider.
+
+**Do not commit private RPC credentials or API keys.**
+
+---
+
+# Setup
+
+Clone the repository and install dependencies:
+
+```bash
+git clone <YOUR_GITHUB_REPOSITORY_URL>
 cd nft-marketplace
 pnpm install
 ```
 
-### Add Anvil to your metamask
+Unlike the original local-development setup, this implementation uses **Ethereum Sepolia rather than an Anvil blockchain**.
 
-Add the following network to your metamask:
-- Name: Anvil
-- RPC URL: http://127.0.0.1:8545
-- Chain ID: 31337
-- Currency Symbol: ETH
+You therefore do **not** need to start:
 
-### Add Anvil accounts to your Metamask
-
-```
-Private Keys
-==================
-
-(0) 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 # This one
-(9) 0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6 # This one
+```bash
+pnpm anvil
 ```
 
-Add private keys `0` and `9` to your Metamask, these will have NFTs already loaded when you run `pnpm anvil` later. 
+to run the deployed marketplace.
 
-### Docker .env
+---
 
-For working with a postgres DB, add a `.env` file to `./marketplaceIndexer/.env`:
+# Configure MetaMask for Ethereum Sepolia
 
+Add or select the Ethereum Sepolia network in MetaMask.
+
+| Setting  | Value                     |
+| -------- | ------------------------- |
+| Network  | Ethereum Sepolia          |
+| Chain ID | `11155111`                |
+| Currency | Sepolia ETH               |
+| RPC URL  | Your Sepolia RPC endpoint |
+
+Ethereum's documentation identifies Sepolia as the recommended public testnet for application development.
+
+You will need Sepolia ETH to pay transaction gas.
+
+---
+
+# Getting Sepolia ETH
+
+Because Sepolia is a testnet, you can obtain test ETH from a Sepolia faucet.
+
+Do not use real ETH for testing the application.
+
+Ethereum maintains a list of Sepolia faucets and testnet resources.
+
+---
+
+# PostgreSQL / Docker Configuration
+
+The indexer uses PostgreSQL to persist blockchain data.
+
+Create the environment file used by the indexer:
+
+```text
+marketplaceIndexer/.env
 ```
+
+Add:
+
+```env
 DATABASE_URL=postgresql://postgres:rindexer@localhost:5440/postgres
 POSTGRES_PASSWORD=rindexer
 ```
 
-This will work with the default commands we run below. If you wish to change your database, you may change your endpoints.
+The PostgreSQL instance is managed through Docker.
 
-## Running the Application
+Before starting the indexer, make sure Docker Desktop is running.
 
-The application requires three components running in parallel:
-
-- Local Ethereum blockchain (anvil), this will come with some blockchain state already loaded. Including contracts, tokens, and NFTs in the accounts you added to Metamask above.
-- Blockchain indexer
-- Next.js application
+You can verify Docker with:
 
 ```bash
-pnpm anvil
-pnpm indexer
+docker --version
+```
+
+and:
+
+```bash
+docker ps
+```
+
+---
+
+# Running the Indexer
+
+Start the rindexer indexer:
+
+```bash
+rindexer start indexer
+```
+
+The indexer connects to Ethereum Sepolia, listens for the configured smart-contract events, and stores indexed information in PostgreSQL.
+
+The GraphQL API is then available at:
+
+```text
+http://localhost:3001/graphql
+```
+
+The frontend uses this endpoint through:
+
+```env
+GRAPHQL_API_URL=http://localhost:3001/graphql
+```
+
+---
+
+# Running the Next.js Application
+
+After Docker/PostgreSQL and the indexer are running, start the frontend:
+
+```bash
 pnpm run dev
 ```
 
-In your Metamask now, select account 0 which you imported from the step above, and add the following NFT with tokenID 0:
+The Next.js development server will normally be available at:
 
-```
-0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+```text
+http://localhost:3000
 ```
 
-You should see the NFT in your metamask. Note: This will only work while `pnpm anvil` is running!
+Open the application in your browser and connect MetaMask using the **Ethereum Sepolia** network.
+
+---
+
+# Running the Complete Application
+
+The development environment consists of:
+
+```text
+Ethereum Sepolia
+       │
+       ▼
+   rindexer
+       │
+       ▼
+  PostgreSQL
+       │
+       ▼
+   GraphQL API
+       │
+       ▼
+  Next.js App
+```
+
+Start Docker first.
+
+Then start the indexer:
+
+```bash
+rindexer start indexer
+```
+
+Then start the frontend:
+
+```bash
+pnpm run dev
+```
+
+The blockchain itself does not need to be started locally because the application uses Ethereum Sepolia.
+
+---
 
 # Database Reset
-If you need to reset the indexer database:
+
+If the indexed database needs to be rebuilt, reset the indexer's PostgreSQL data using:
 
 ```bash
 pnpm run reset-indexer
 ```
 
-This will stop the indexer, remove the volume, and restart it.
+This removes the existing indexed database state so that the indexer can rebuild the data from the configured blockchain starting point.
 
-# Features
+---
 
-- NFT Minting: Create new NFTs with the CakeNFT contract
-- NFT Listing: List your NFTs for sale on the marketplace
-- NFT Buying: Purchase NFTs that others have listed
-- Recently Listed NFTs: View the most recent NFTs available for purchase
-- Address Compliance: Integrated with Circle's compliance API to screen addresses
-- Wallet Integration: Connect with MetaMask, Rainbow, and other wallets via WalletConnect
+# Smart Contracts
 
-# Addresses for testing
+The marketplace is powered by Solidity smart contracts developed and deployed using Foundry.
 
-- usdc: "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-- nftMarketplace: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
-- cakeNft: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-- moodNft: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+The primary contracts include:
+
+### NFT Marketplace
+
+Responsible for:
+
+* Creating marketplace listings
+* Tracking listed NFTs
+* Processing purchases
+* Handling marketplace payments
+* Emitting events consumed by the indexer
+
+### CakeNFT
+
+NFT contract used for minting and managing marketplace NFTs.
+
+### MoodNFT
+
+Additional NFT contract used within the application.
+
+### USDC
+
+ERC-20 token used for marketplace payments.
+
+---
+
+# Sepolia Contract Addresses
+
+The following addresses correspond to the contracts deployed for the Ethereum Sepolia deployment.
+
+
+```text
+USDC:
+0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238
+
+NFT Marketplace:
+0x14AE60F5ba60de5803E081F1b03E91BD8309D342
+
+CakeNFT:
+0xEA950C4B486484396cC88Bbf10b8cdac5bf28602
+
+MoodNFT:
+0x0Df84913b62Aa873b1C18F0672422572fFCF05Db
+```
+
+These addresses must match the addresses configured in:
+
+* The frontend
+* The rindexer configuration
+* The smart-contract deployment configuration
+* Any contract ABIs/configuration used by the application
+
+**The old Anvil addresses are intentionally not used here because they only exist on the local Anvil chain.**
+
+---
+
+# Blockchain Configuration
+
+The application targets:
+
+```text
+Network: Ethereum Sepolia
+Chain ID: 11155111
+```
+
+The frontend's Wagmi configuration should therefore include Sepolia rather than Anvil for the production/testnet deployment.
+
+For example:
+
+```typescript
+import { sepolia } from "wagmi/chains";
+
+const config = getDefaultConfig({
+    appName: "NFT Marketplace",
+    projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+    chains: [sepolia],
+});
+```
+
+The exact configuration may differ depending on the application's provider setup.
+
+---
+
+# Indexing Architecture
+
+One of the key architectural components of the application is the blockchain indexing pipeline.
+
+When a user performs an operation such as listing an NFT:
+
+```text
+User
+ │
+ │ Transaction
+ ▼
+MetaMask
+ │
+ ▼
+Ethereum Sepolia
+ │
+ │ Marketplace Event
+ ▼
+rindexer
+ │
+ ▼
+PostgreSQL
+ │
+ ▼
+GraphQL
+ │
+ ▼
+Next.js
+ │
+ ▼
+Recently Listed NFTs
+```
+
+This separates **blockchain state** from **application-query state**.
+
+The blockchain remains the authoritative source of ownership and marketplace transactions, while PostgreSQL provides an efficient indexed representation of the events required by the frontend.
+
+---
+
+# GraphQL
+
+The frontend communicates with the indexer through GraphQL.
+
+Local GraphQL endpoint:
+
+```text
+http://localhost:3001/graphql
+```
+
+The GraphQL layer allows the frontend to request exactly the marketplace information it needs instead of repeatedly querying individual blockchain contracts.
+
+Typical data queried includes:
+
+* NFT listings
+* NFT metadata references
+* Listing prices
+* Token IDs
+* NFT contract addresses
+* Marketplace events
+* Recently listed NFTs
+
+---
+
+# Compliance
+
+The marketplace includes an optional address-compliance layer.
+
+When enabled:
+
+```env
+ENABLE_COMPLIANCE_CHECK=true
+```
+
+wallet addresses can be checked before relevant marketplace operations are completed.
+
+The compliance functionality is integrated through Circle's API.
+
+Keep API credentials server-side and never expose private API keys in client-side code.
+
+---
+
+# Project Structure
+
+A simplified representation of the project architecture:
+
+```text
+nft-marketplace/
+│
+├── app/
+│   ├── ...
+│   └── ...
+│
+├── components/
+│   ├── ...
+│   └── ...
+│
+├── contracts/
+│   ├── ...
+│   └── ...
+│
+├── marketplaceIndexer/
+│   ├── ...
+│   └── .env
+│
+├── public/
+│
+├── scripts/
+│
+├── package.json
+├── foundry.toml
+├── next.config.*
+└── README.md
+```
+
+The exact structure may vary as the project evolves.
+
+---
+
+# Development Workflow
+
+The project follows a Web3 application development workflow:
+
+### 1. Smart-contract development
+
+Contracts are written in Solidity and developed/tested using Foundry.
+
+### 2. Deployment
+
+Contracts are deployed to Ethereum Sepolia.
+
+### 3. Event emission
+
+Marketplace interactions emit blockchain events.
+
+### 4. Indexing
+
+rindexer listens for the configured events and persists relevant information in PostgreSQL.
+
+### 5. GraphQL
+
+The indexed data is exposed through the rindexer GraphQL endpoint.
+
+### 6. Frontend
+
+Next.js queries the GraphQL API while Wagmi handles direct blockchain interactions.
+
+### 7. Wallet
+
+Users interact with the application through MetaMask or another compatible Web3 wallet.
+
+---
+
+# Why Sepolia Instead of Anvil?
+
+During development, Anvil can provide a convenient local Ethereum environment.
+
+However, the deployed version of this marketplace uses **Ethereum Sepolia**.
+
+This means:
+
+* Smart contracts exist on a real public Ethereum test network.
+* Wallets connect to Sepolia.
+* Transactions are broadcast to Sepolia.
+* rindexer indexes Sepolia events.
+* PostgreSQL stores the indexed application data.
+* The frontend consumes the indexed data through GraphQL.
+
+There is therefore no dependency on a locally running Anvil chain for the deployed/testnet version.
+
+---
+
+# Security Notes
+
+Never commit secrets to the repository.
+
+The following should remain private:
+
+```text
+CIRCLE_API_KEY
+Wallet private keys
+Deployment private keys
+RPC provider API keys
+WalletConnect secrets
+```
+
+Use environment variables and keep `.env`, `.env.local`, and other secret-containing files in `.gitignore`.
+
+---
+
+# Project Highlights
+
+This project demonstrates the integration of several layers of modern Web3 application development:
+
+* Solidity smart-contract engineering
+* Foundry-based contract development
+* Ethereum Sepolia deployment
+* ERC-20 token payments
+* NFT minting and ownership
+* NFT marketplace mechanics
+* Wallet integration
+* Wagmi
+* RainbowKit
+* Blockchain event indexing
+* rindexer
+* PostgreSQL
+* GraphQL
+* Next.js
+* TypeScript
+* Docker
+* Address compliance
+
+Rather than treating the frontend, smart contracts, indexer, and database as isolated components, the project demonstrates how these systems work together to form a complete decentralized application.
+
+---
+
+# Author
+
+**Taiwo Oladokun**
+
+Full-Stack Blockchain Engineer
+
+Building decentralized applications across the smart-contract, backend/indexing, and frontend layers.
