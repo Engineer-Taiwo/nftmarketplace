@@ -6,14 +6,19 @@ import {DeployCakeNft} from "./DeployCakeNft.s.sol";
 import {DeployMarketplace} from "./DeployMarketplace.s.sol";
 import {DeployMoodNft} from "./DeployMoodNft.s.sol";
 import {MintAndListCake} from "./MintAndListCake.s.sol";
-import {MockUSDC} from "../src/MockUSDC.sol";
+import {USDC} from "../src/USDC.sol";
 import {MoodNft} from "../src/MoodNft.sol";
+import {HelperConfig} from "./HelperConfig.s.sol";
 
-contract SetupAnvil is Script {
+
+contract SetupChain is Script {
     DeployMarketplace deployMarketplace;
     DeployCakeNft deployCakeNft;
     DeployMoodNft deployMoodNft;
     MintAndListCake mintAndListCake;
+
+    HelperConfig helper = new HelperConfig();
+    address paymentToken = helper.activeNetworkConfig();
 
     function run() external {
         deployMarketplace = new DeployMarketplace();
@@ -21,13 +26,13 @@ contract SetupAnvil is Script {
         deployMoodNft = new DeployMoodNft();
         mintAndListCake = new MintAndListCake();
 
-        vm.startBroadcast();
-        MockUSDC usdc = new MockUSDC();
-        vm.stopBroadcast();
+        // vm.startBroadcast();
+        // MockUSDC usdc = new MockUSDC();
+        // vm.stopBroadcast();
 
-        console.log("USDC deployed at: ", address(usdc));
+        // console.log("USDC deployed at: ", address(usdc));
 
-        address marketplaceAddy = address(deployMarketplace.deployMarketplace(address(usdc)));
+        address marketplaceAddy = address(deployMarketplace.deployMarketplace(paymentToken));
         console.log("Marketplace deployed at: ", marketplaceAddy);
 
         address cakeAddy = deployCakeNft.run();
@@ -51,9 +56,9 @@ contract SetupAnvil is Script {
         MoodNft(moodAddy).mintNftTo(ANVIL_ONE);
         MoodNft(moodAddy).mintNftTo(ANVIL_TEN);
 
-        usdc.mint(ANVIL_ONE, 100e6);
-        usdc.mint(ANVIL_TEN, 100e6);
-        usdc.mint(ANVIL_ONE, 100e6);
+        USDC(paymentToken).mint(ANVIL_ONE, 100e6);
+        USDC(paymentToken).mint(ANVIL_TEN, 100e6);
+        USDC(paymentToken).mint(ANVIL_ONE, 100e6);
         vm.stopBroadcast();
     }
 }

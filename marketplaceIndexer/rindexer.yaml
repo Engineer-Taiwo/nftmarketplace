@@ -1,0 +1,27 @@
+name: marketplaceIndexer
+repository: .
+project_type: no-code
+config: {}
+timestamps: null
+networks:
+- name: sepolia
+  chain_id: 11155111
+  rpc:  https://eth-sepolia.g.alchemy.com/v2/alch_gS84D8-brXM_xYCtT2Le1
+storage:
+  postgres:
+    enabled: true
+native_transfers:
+  enabled: false
+contracts:
+- name: NftMarketplace
+  details:
+  - network: sepolia
+    address: 0x14AE60F5ba60de5803E081F1b03E91BD8309D342
+    start_block: '11455650'
+  abi: ./abis/NftMarketplace.abi.json
+  include_events:
+  - name: ItemListed
+  - name: ItemCanceled
+  - name: ItemBought
+global:
+  health_port: 8080

@@ -14,6 +14,12 @@ export const chainsToContracts: ContractsConfig = {
         cakeNft: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
         moodNft: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
     },
+    11155111: {
+        usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        nftMarketplace: "0x14AE60F5ba60de5803E081F1b03E91BD8309D342",
+        cakeNft: "0xEA950C4B486484396cC88Bbf10b8cdac5bf28602",
+        moodNft: "0x0Df84913b62Aa873b1C18F0672422572fFCF05Db"
+    }
 }
 
 export const erc20Abi = [
