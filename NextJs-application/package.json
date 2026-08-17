@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "anvil": "anvil --load-state marketplace-anvil.json --block-time 2",
     "reset-indexer": "cd marketplaceIndexer && docker-compose down && docker volume rm marketplaceindexer_postgres_data",
     "indexer": "cd marketplaceIndexer && rindexer start all",
@@ -22,9 +22,9 @@
     "@types/uuid": "^10.0.0",
     "@wagmi/core": "^2.16.7",
     "graphql": "^16.10.0",
-    "next": "15.2.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "react-icons": "^5.5.0",
     "uuid": "^11.1.0",
     "viem": "2.x",
@@ -34,11 +34,19 @@
     "@synthetixio/synpress": "^4.0.10",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.3.1",
     "prettier": "^3.5.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.0.9"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.18",
+      "@types/react-dom": "19.2.4"
+    }
   }
 }
